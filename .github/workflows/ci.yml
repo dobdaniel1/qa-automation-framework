@@ -1,0 +1,52 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [api, ui]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the system under test
+        uses: actions/checkout@v4
+        with:
+          repository: dobdaniel1/payment-switch-simulator
+          path: switch
+
+      - name: Start the switch with PostgreSQL
+        run: docker compose -f switch/docker-compose.yml up -d --build --wait
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install Chromium
+        if: matrix.suite == 'ui'
+        run: mvn -B -q test-compile exec:java -Dexec.args="install --with-deps chromium"
+
+      - name: Run ${{ matrix.suite }} tests
+        run: mvn -B test -Dgroups=${{ matrix.suite }}
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.suite }}-reports
+          path: |
+            target/karate-reports
+            target/surefire-reports
+
+      - name: Switch logs on failure
+        if: failure()
+        run: docker compose -f switch/docker-compose.yml logs api

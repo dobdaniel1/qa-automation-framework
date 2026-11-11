@@ -1,0 +1,22 @@
+{
+  "id": "#uuid",
+  "created_at": "#regex \\d{4}-\\d{2}-\\d{2}T.*Z",
+  "business_date": "#regex \\d{4}-\\d{2}-\\d{2}",
+  "type": "#? _ == 'purchase' || _ == 'refund'",
+  "stan": "#regex \\d{6}",
+  "rrn": "#regex \\d{12}",
+  "terminal_id": "#string",
+  "merchant_id": "#string",
+  "pan_masked": "#regex \\d{6}\\*+\\d{4}",
+  "amount": "#number",
+  "currency": "#regex \\d{3}",
+  "host_id": "##string",
+  "response_code": "#regex \\d{2}",
+  "response_message": "#string",
+  "auth_code": "##regex [0-9A-F]{6}",
+  "status": "#? ['APPROVED','DECLINED','REVERSED','REVERSAL_PENDING'].includes(_)",
+  "attempts": "#[] #object",
+  "reversed_at": "##string",
+  "batch_id": "##string",
+  "duplicate": "#boolean"
+}
